@@ -342,14 +342,6 @@ public static partial class Network
         if (IsServer) CurrentPlayer.CmdSyncSelectedDiceAndReroll();
     }
 
-    // UI
-
-    public static void EnableNetwork()
-    {
-        NetworkManagerHUD netUI = GameObject.Find("NetworkManager").GetComponentInChildren<NetworkManagerHUD>();
-        netUI.showGUI = !netUI.showGUI;
-    }
-
     // SWARM MANAGER
 
     public static void SetSwarmManagerManeuver(string maneuverCode)
@@ -574,6 +566,11 @@ public static partial class Network
     public static void SyncDecks(int playerNo, int seed)
     {
         if (IsServer) CurrentPlayer.CmdSyncDecks(playerNo, seed);
+    }
+
+    public static void CombatActivation(int shipId)
+    {
+        CurrentPlayer.CmdCombatActivation(shipId);
     }
 
 }

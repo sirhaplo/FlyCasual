@@ -9,6 +9,11 @@ public static class DamageDecks
 {
     private static List<DamageDeck> damadeDecks;
 
+    public static bool Initialized
+    {
+        get { return damadeDecks != null; }
+    }
+
     public static void Initialize()
     {
         damadeDecks = new List<DamageDeck>
@@ -77,6 +82,11 @@ public class DamageDeck
             Deck.Add(new StunnedPilot());
             Deck.Add(new MajorExplosion());
         }
+    }
+
+    public void PutOnTop(GenericDamageCard card)
+    {
+        Deck.Insert(0, card);
     }
 
     public void DrawDamageCard(bool isFaceup, Action<GenericDamageCard, EventArgs> doWithDamageCard, EventArgs e)

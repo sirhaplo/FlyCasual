@@ -28,7 +28,8 @@ public enum DamageTypes
     CriticalHitCard,
     BombDetonation,
     CardAbility,
-    Rules
+    Rules,
+    Console
 }
 
 public static partial class Combat
@@ -188,17 +189,15 @@ public static partial class Combat
     {
         Attacker.CallShotStart();
         Defender.CallShotStart();
-
+        
         Triggers.ResolveTriggers(TriggerTypes.OnShotStart, AttackDiceRoll);
     }
 
     private static void AttackDiceRoll()
     {
         Selection.ActiveShip = Selection.ThisShip;
-        Phases.StartTemporarySubPhaseOld(
-            "Attack dice roll",
-            typeof(AttackDiceRollCombatSubPhase)
-        );
+        Attacker.CallDiceAboutToBeRolled();
+        Triggers.ResolveTriggers(TriggerTypes.OnDiceAboutToBeRolled, delegate { Phases.StartTemporarySubPhaseOld("Attack dice roll", typeof(AttackDiceRollCombatSubPhase)); });
     }
 
     public static void ConfirmAttackDiceResults()
@@ -230,10 +229,8 @@ public static partial class Combat
     private static void DefenceDiceRoll()
     {
         Selection.ActiveShip = Selection.AnotherShip;
-        Phases.StartTemporarySubPhaseOld(
-            "Defence dice roll",
-            typeof(DefenceDiceRollCombatSubPhase)
-        );
+        Defender.CallDiceAboutToBeRolled();
+        Triggers.ResolveTriggers(TriggerTypes.OnDiceAboutToBeRolled, delegate { Phases.StartTemporarySubPhaseOld("Defence dice roll", typeof(DefenceDiceRollCombatSubPhase));});
     }
 
     // COMPARE RESULTS

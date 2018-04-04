@@ -73,9 +73,9 @@ namespace GameModes
             (Phases.CurrentSubPhase as SubPhases.BarrelRollPlanningSubPhase).TryConfirmBarrelRollPosition();
         }
 
-        public override void StartBarrelRollExecution(Ship.GenericShip ship)
+        public override void StartBarrelRollExecution()
         {
-            (Phases.CurrentSubPhase as SubPhases.BarrelRollPlanningSubPhase).StartBarrelRollExecution(ship);
+            (Phases.CurrentSubPhase as SubPhases.BarrelRollPlanningSubPhase).StartBarrelRollExecution();
         }
 
         public override void FinishBarrelRoll()
@@ -117,9 +117,9 @@ namespace GameModes
             (Phases.CurrentSubPhase as SubPhases.BoostPlanningSubPhase).TryConfirmBoostPosition();
         }
 
-        public override void StartBoostExecution(Ship.GenericShip ship)
+        public override void StartBoostExecution()
         {
-            (Phases.CurrentSubPhase as SubPhases.BoostPlanningSubPhase).StartBoostExecution(ship);
+            (Phases.CurrentSubPhase as SubPhases.BoostPlanningSubPhase).StartBoostExecution();
         }
 
         public override void FinishBoost()
@@ -154,7 +154,7 @@ namespace GameModes
 
         public override void FinishMovementExecution()
         {
-            Phases.FinishSubPhase(typeof(SubPhases.MovementExecutionSubPhase));
+            Selection.ActiveShip.CallExecuteMoving(delegate { Phases.FinishSubPhase(typeof(SubPhases.MovementExecutionSubPhase)); });
         }
 
         // Swarm Manager
@@ -167,6 +167,12 @@ namespace GameModes
         public override void GenerateDamageDeck(PlayerNo playerNo, int seed)
         {
             DamageDecks.GetDamageDeck(playerNo).ShuffleDeck(seed);
+        }
+
+        public override void CombatActivation(int shipId)
+        {
+            Selection.ChangeActiveShip("ShipId:" + shipId);
+            Selection.ThisShip.CallCombatActivation(delegate { (Phases.CurrentSubPhase as CombatSubPhase).ChangeSelectionMode(Team.Type.Enemy); });
         }
     }
 }

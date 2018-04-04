@@ -88,7 +88,7 @@ namespace GameModes
             }
         }
 
-        public override void StartBarrelRollExecution(Ship.GenericShip ship)
+        public override void StartBarrelRollExecution()
         {
             Network.PerformBarrelRoll();
         }
@@ -138,7 +138,7 @@ namespace GameModes
             }
         }
 
-        public override void StartBoostExecution(Ship.GenericShip ship)
+        public override void StartBoostExecution()
         {
             Network.PerformBoost();
         }
@@ -207,6 +207,11 @@ namespace GameModes
         public override void GenerateDamageDeck(PlayerNo playerNo, int seed)
         {
             Network.SyncDecks(Tools.PlayerToInt(playerNo), seed);
+        }
+
+        public override void CombatActivation(int shipId)
+        {
+            Network.CombatActivation(shipId);
         }
     }
 }

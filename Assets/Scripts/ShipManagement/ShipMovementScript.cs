@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using GameModes;
+using Ship;
+using System.Linq;
 
 public class ShipMovementScript : MonoBehaviour {
 
@@ -151,6 +153,8 @@ public class ShipMovementScript : MonoBehaviour {
 
     private static void FinishManeuverExecution()
     {
+        MovementTemplates.HideLastMovementRuler();
+
         GameMode.CurrentGameMode.FinishMovementExecution();
     }
 

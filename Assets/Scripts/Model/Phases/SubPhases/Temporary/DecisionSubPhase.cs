@@ -213,7 +213,7 @@ namespace SubPhases
 
                 if (DecisionOwner == null) DecisionOwner = Roster.GetPlayer(Phases.CurrentPhasePlayer);
 
-                if (ShowSkipButton) UI.ShowSkipButton();
+                if (ShowSkipButton) UI.ShowSkipButton(); else UI.HideSkipButton();
 
                 DecisionOwner.TakeDecision();
             }
@@ -271,12 +271,8 @@ namespace SubPhases
 
         public static void ConfirmDecision()
         {
-            Tooltips.EndTooltip();
-            UI.HideSkipButton();
-
             Action callBack = Phases.CurrentSubPhase.CallBack;
-            Phases.FinishSubPhase(Phases.CurrentSubPhase.GetType());
-            Phases.CurrentSubPhase.Resume();
+            ConfirmDecisionNoCallback();
             callBack();
         }
 
