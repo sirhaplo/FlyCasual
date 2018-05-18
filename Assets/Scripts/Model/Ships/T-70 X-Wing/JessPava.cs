@@ -79,31 +79,13 @@ namespace ActionsList
 
         public override int GetActionEffectPriority()
         {
-            int result = 0;
-            if (getDices() > 0)
-            {
-                int focuses = 0, blanks = 0;
-                bool hasFocus = false;
-                if (Combat.AttackStep == CombatStep.Attack)
-                {
-                    focuses = Combat.DiceRollAttack.FocusesNotRerolled;
-                    blanks = Combat.DiceRollAttack.BlanksNotRerolled;
-                    hasFocus = Combat.Attacker.GetAvailableActionEffectsList().Count(n => n.IsTurnsAllFocusIntoSuccess) > 0;                                       
-                }
-                if (Combat.AttackStep == CombatStep.Defence)
-                {
-                    focuses = Combat.DiceRollDefence.FocusesNotRerolled;
-                    blanks = Combat.DiceRollDefence.BlanksNotRerolled;
-                    hasFocus = Combat.Defender.GetAvailableActionEffectsList().Count(n => n.IsTurnsAllFocusIntoSuccess) > 0;
-                }                
-            }
-            return result;
+            return 90;
         }
 
         private bool FilterTargets(GenericShip ship)
         {
             //Filter other friendly ships range 1
-            Board.ShipDistanceInformation distanceInfo = new Board.ShipDistanceInformation(Host, ship);
+            BoardTools.DistanceInfo distanceInfo = new BoardTools.DistanceInfo(Host, ship);
             return  ship.Owner.PlayerNo == Host.Owner.PlayerNo &&
                     ship != Host && 
                     distanceInfo.Range == 1;

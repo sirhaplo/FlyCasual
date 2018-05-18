@@ -27,6 +27,7 @@ public static partial class Roster
     {
         CreatePlayers();
         SpawnAllShips();
+        SetPlayerCustomization();
     }
 
     //PLAYERS CREATION
@@ -54,6 +55,15 @@ public static partial class Roster
         foreach (var squadList in SquadBuilder.SquadLists)
         {
             SquadBuilder.SetPlayerSquadFromImportedJson(squadList.SavedConfiguration, squadList.PlayerNo, delegate { });
+
+            if (Roster.GetPlayer(squadList.PlayerNo).GetType() != typeof(HotacAiPlayer))
+            {
+                JSONObject playerInfo = squadList.SavedConfiguration.GetField("PlayerInfo");
+                Roster.GetPlayer(squadList.PlayerNo).NickName = playerInfo.GetField("NickName").str;
+                Roster.GetPlayer(squadList.PlayerNo).Title = playerInfo.GetField("Title").str;
+                Roster.GetPlayer(squadList.PlayerNo).Avatar = playerInfo.GetField("Avatar").str;
+            }
+
             Roster.GetPlayer(squadList.PlayerNo).SquadCost = squadList.Points;
         }
 
@@ -69,7 +79,7 @@ public static partial class Roster
             AddShipToLists(newShip);
         }
 
-        Board.BoardManager.SetShips();
+        BoardTools.Board.SetShips();
     }
 
     private static void AddShipToLists(GenericShip newShip)
@@ -94,6 +104,7 @@ public static partial class Roster
         if (ship != null)
         {
             ship.SetActive(false);
+            ship.SetPosition(new Vector3(0, -100, 0));
             ship.InfoPanel.SetActive(false);
             ship.Owner.Ships.Remove(id);
             AllShips.Remove(id);
@@ -151,6 +162,11 @@ public static partial class Roster
     public static GenericPlayer GetPlayer(PlayerNo playerNo)
     {
         return (playerNo == PlayerNo.Player1) ? Roster.Player1 : Roster.Player2;
+    }
+
+    public static GenericPlayer GetPlayer(int playerNo)
+    {
+        return (playerNo == 1) ? Roster.Player1 : Roster.Player2;
     }
 
     public static int AnotherPlayer(int player)

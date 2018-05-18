@@ -66,7 +66,7 @@ public partial class Console : MonoBehaviour {
         foreach (var type in typelist)
         {
             if (type.MemberType == MemberTypes.NestedType) continue;
-            GenericCommand newCommand = (GenericCommand)System.Activator.CreateInstance(type);
+            System.Activator.CreateInstance(type);
         }
 
         AvailableCommands = AvailableCommands.OrderBy(n => n.Key).ToDictionary(n => n.Key, n => n.Value);
@@ -99,13 +99,24 @@ public partial class Console : MonoBehaviour {
     {
         if (type == LogType.Error || type == LogType.Exception)
         {
+            if (IsHiddenError(logString)) return;
+
             IsActive = true;
             Write("\n" + logString + "\n\n" + stackTrace, LogTypes.Errors, true, "red");
         }
     }
 
+    private bool IsHiddenError(string text)
+    {
+        if ((text == "ClientDisconnected due to error: Timeout") || (text == "ServerDisconnected due to error: Timeout")) return true;
+
+        return false;
+    }
+
     public static void ProcessCommand(string inputText)
     {
+        if (string.IsNullOrEmpty(inputText)) return;
+
         List<string> blocks = inputText.ToLower().Split(' ').ToList();
         string keyword = blocks.FirstOrDefault();
         blocks.RemoveAt(0);

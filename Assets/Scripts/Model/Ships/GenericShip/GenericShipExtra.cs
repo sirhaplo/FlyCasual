@@ -5,6 +5,7 @@ using UnityEngine;
 using Mods;
 using ActionsList;
 using Upgrade;
+using RuleSets;
 
 namespace Ship
 {
@@ -28,6 +29,9 @@ namespace Ship
 
         public GenericShip Host;
 
+        public Type ShipRuleType = typeof(FirstEdition);
+        public Type PilotRuleType = typeof(FirstEdition);
+
         private string imageUrl;
         public string ImageUrl
         {
@@ -47,19 +51,21 @@ namespace Ship
         public int ShotsCount { get; protected set; }
         public List<string> SoundFlyPaths { get; protected set; }
 
-        public bool IsHidden { get; set; }
+        public bool IsHidden { get; protected set; }
 
-        public Type FromMod { get; set; }
+        public char ShipIconLetter { get; protected set; }
+
+        public List<Type> RequiredMods { get; set; }
 
         public event EventHandler OnDiscardUpgrade;
+        public static EventHandler OnDiscardUpgradeGlobal;
+
         public event EventHandlerUpgrade OnAfterDiscardUpgrade;
 
         public event EventHandler OnFlipFaceUpUpgrade;
         public event EventHandlerUpgrade OnAfterFlipFaceUpUpgrade;
 
         public event EventHandlerDualUpgrade OnAfterDualCardSideSelected;
-
-
 
         public void CallOnShipIsPlaced(Action callback)
         {
@@ -71,6 +77,7 @@ namespace Ship
         public void CallDiscardUpgrade(Action callBack)
         {
             if (OnDiscardUpgrade != null) OnDiscardUpgrade();
+            if (OnDiscardUpgradeGlobal != null) OnDiscardUpgradeGlobal();
 
             Triggers.ResolveTriggers(TriggerTypes.OnDiscard, callBack);
         }
@@ -124,7 +131,13 @@ namespace Ship
 
             if (IsHidden) return false;
 
-            if (FromMod != null && !ModsManager.Mods[FromMod].IsOn) return false;
+            if (RequiredMods.Count != 0)
+            {
+                foreach (var modType in RequiredMods)
+                {
+                    if (!ModsManager.Mods[modType].IsOn) return false;
+                }
+            }
 
             return result;
         }

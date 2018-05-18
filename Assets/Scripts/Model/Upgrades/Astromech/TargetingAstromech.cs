@@ -1,7 +1,7 @@
 ﻿using Abilities;
 using Ship;
 using Upgrade;
-using Board;
+using BoardTools;
 
 namespace UpgradesList
 {
@@ -36,8 +36,8 @@ namespace Abilities
 
         private void RegisterTargetingAstromech(GenericShip hostShip)
         {
-            if (HostShip.GetLastManeuverColor() != Movement.ManeuverColor.Red) return;
-            if (BoardManager.IsOffTheBoard(hostShip)) return;
+            if (HostShip.GetLastManeuverColor() != Movement.MovementComplexity.Complex) return;
+            if (BoardTools.Board.IsOffTheBoard(hostShip)) return;
 
             RegisterAbilityTrigger(TriggerTypes.OnShipMovementFinish, AssignAstromechTargetingLock);            
         }
@@ -47,7 +47,11 @@ namespace Abilities
             Messages.ShowInfoToHuman("Targeting Astromech: Aquire a Target Lock");
             Sounds.PlayShipSound("Astromech-Beeping-and-whistling");
 
-            HostShip.AcquireTargetLock(Triggers.FinishTrigger);
+            HostShip.ChooseTargetToAcquireTargetLock(
+                Triggers.FinishTrigger,
+                HostUpgrade.Name,
+                HostUpgrade.ImageUrl
+            );
         }
     }
 }

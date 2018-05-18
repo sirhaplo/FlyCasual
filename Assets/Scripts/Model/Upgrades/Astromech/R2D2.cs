@@ -2,12 +2,14 @@
 using Upgrade;
 using Abilities;
 using Ship;
-using Board;
+using BoardTools;
+using UnityEngine;
+using RuleSets;
 
 namespace UpgradesList
 {
 
-    public class R2D2 : GenericUpgrade
+    public class R2D2 : GenericUpgrade, ISecondEditionUpgrade
     {
         public R2D2() : base()
         {
@@ -16,7 +18,16 @@ namespace UpgradesList
             isUnique = true;
             Cost = 4;
 
+            AvatarOffset = new Vector2(19, 1);
+
             UpgradeAbilities.Add(new R2D2Ability());
+        }
+
+        public void AdaptUpgradeToSecondEdition()
+        {
+            MaxCharges = 3;
+
+            ImageUrl = "https://i.imgur.com/BDujMs7.png";
         }
     }
 
@@ -38,9 +49,9 @@ namespace Abilities
 
         private void R2D2PlanRegenShield(GenericShip host)
         {
-            if (BoardManager.IsOffTheBoard(host)) return;
+            if (BoardTools.Board.IsOffTheBoard(host)) return;
 
-            if (host.AssignedManeuver.ColorComplexity == Movement.ManeuverColor.Green)
+            if (host.AssignedManeuver.ColorComplexity == Movement.MovementComplexity.Easy)
             {
                 if (host.Shields < host.MaxShields)
                 {

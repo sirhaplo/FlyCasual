@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Board;
+using BoardTools;
 using GameModes;
 using System.Linq;
+using RuleSets;
 
 namespace ActionsList
 {
@@ -53,7 +54,7 @@ namespace SubPhases
         List<string> AvailableBoostDirections = new List<string>();
         public string SelectedBoostHelper;
 
-        public bool ObstacleOverlapAllowed = false;
+        public bool IsTractorBeamBoost = false;
 
         public override void Start()
         {
@@ -67,7 +68,7 @@ namespace SubPhases
         public void InitializeRendering()
         {
             GameObject prefab = (GameObject)Resources.Load(TheShip.ShipBase.TemporaryPrefabPath, typeof(GameObject));
-            ShipStand = MonoBehaviour.Instantiate(prefab, TheShip.GetPosition(), TheShip.GetRotation(), BoardManager.GetBoard());
+            ShipStand = MonoBehaviour.Instantiate(prefab, TheShip.GetPosition(), TheShip.GetRotation(), BoardTools.Board.GetBoard());
             ShipStand.transform.position = new Vector3(ShipStand.transform.position.x, 0, ShipStand.transform.position.z);
             foreach (Renderer render in ShipStand.transform.Find("ShipBase").GetComponentsInChildren<Renderer>())
             {
@@ -194,6 +195,7 @@ namespace SubPhases
                 CallBack
             );
             execution.TheShip = TheShip;
+            execution.IsTractorBeamBoost = IsTractorBeamBoost;
             execution.Start();
         }
 
@@ -201,14 +203,13 @@ namespace SubPhases
         {
             TheShip.IsLandedOnObstacle = false;
 
-            TheShip.RemoveAlreadyExecutedAction(typeof(ActionsList.BoostAction));
             MonoBehaviour.Destroy(ShipStand);
 
             GameManagerScript Game = GameObject.Find("GameManager").GetComponent<GameManagerScript>();
             Game.Movement.CollidedWith = null;
             MovementTemplates.HideLastMovementRuler();
 
-            PreviousSubPhase.Resume();
+            RuleSet.Instance.ActionIsFailed(TheShip, typeof(ActionsList.BoostAction));
         }
 
         private void HidePlanningTemplates()
@@ -298,7 +299,7 @@ namespace SubPhases
                 if (!quiet) Messages.ShowError("Cannot overlap another ship");
                 allow = false;
             }
-            else if (!TheShip.IsIgnoreObstacles && !ObstacleOverlapAllowed
+            else if (!TheShip.IsIgnoreObstacles && !IsTractorBeamBoost
                 && (obstaclesStayDetectorBase.OverlapsAsteroidNow || obstaclesStayDetectorMovementTemplate.OverlapsAsteroidNow))
             {
                 if (!quiet) Messages.ShowError("Cannot overlap asteroid");
@@ -334,6 +335,8 @@ namespace SubPhases
 
     public class BoostExecutionSubPhase : GenericSubPhase
     {
+        public bool IsTractorBeamBoost;
+
         public override void Start()
         {
             Name = "Boost execution";
@@ -351,22 +354,22 @@ namespace SubPhases
             switch ((PreviousSubPhase as BoostPlanningSubPhase).SelectedBoostHelper)
             {
                 case "Straight 1":
-                    boostMovement = new Movement.StraightBoost(1, Movement.ManeuverDirection.Forward, Movement.ManeuverBearing.Straight, Movement.ManeuverColor.None);
+                    boostMovement = new Movement.StraightBoost(1, Movement.ManeuverDirection.Forward, Movement.ManeuverBearing.Straight, Movement.MovementComplexity.None);
                     break;
                 case "Bank 1 Left":
-                    boostMovement = new Movement.BankBoost(1, Movement.ManeuverDirection.Left, Movement.ManeuverBearing.Bank, Movement.ManeuverColor.None);
+                    boostMovement = new Movement.BankBoost(1, Movement.ManeuverDirection.Left, Movement.ManeuverBearing.Bank, Movement.MovementComplexity.None);
                     break;
                 case "Bank 1 Right":
-                    boostMovement = new Movement.BankBoost(1, Movement.ManeuverDirection.Right, Movement.ManeuverBearing.Bank, Movement.ManeuverColor.None);
+                    boostMovement = new Movement.BankBoost(1, Movement.ManeuverDirection.Right, Movement.ManeuverBearing.Bank, Movement.MovementComplexity.None);
                     break;
                 case "Turn 1 Right":
-                    boostMovement = new Movement.TurnBoost(1, Movement.ManeuverDirection.Right, Movement.ManeuverBearing.Turn, Movement.ManeuverColor.None);
+                    boostMovement = new Movement.TurnBoost(1, Movement.ManeuverDirection.Right, Movement.ManeuverBearing.Turn, Movement.MovementComplexity.None);
                     break;
                 case "Turn 1 Left":
-                    boostMovement = new Movement.TurnBoost(1, Movement.ManeuverDirection.Left, Movement.ManeuverBearing.Turn, Movement.ManeuverColor.None);
+                    boostMovement = new Movement.TurnBoost(1, Movement.ManeuverDirection.Left, Movement.ManeuverBearing.Turn, Movement.MovementComplexity.None);
                     break;
                 default:
-                    boostMovement = new Movement.StraightBoost(1, Movement.ManeuverDirection.Forward, Movement.ManeuverBearing.Straight, Movement.ManeuverColor.None);
+                    boostMovement = new Movement.StraightBoost(1, Movement.ManeuverDirection.Forward, Movement.ManeuverBearing.Straight, Movement.MovementComplexity.None);
                     break;
             }
 
@@ -375,7 +378,7 @@ namespace SubPhases
             MovementTemplates.ApplyMovementRuler(TheShip, boostMovement);
 
             boostMovement.Perform();
-            Sounds.PlayFly(TheShip);
+            if (!IsTractorBeamBoost) Sounds.PlayFly(TheShip);
         }
 
         public void FinishBoost()

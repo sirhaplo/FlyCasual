@@ -49,9 +49,9 @@ namespace Abilities
              * or Juno Eclipse using her pilot ability to execute a maneuver that is not on her dial) cannot use Lightning Reflexes. 
              * (X-Wing FAQ, Version 3.2, Updated 09/04/2015) */
             if (!HostShip.HasManeuver(HostShip.AssignedManeuver.ToString())) return;
-            if (Board.BoardManager.IsOffTheBoard(host)) return;
+            if (BoardTools.Board.IsOffTheBoard(host)) return;
 
-            if (HostShip.AssignedManeuver.ColorComplexity == ManeuverColor.White || HostShip.AssignedManeuver.ColorComplexity == ManeuverColor.Green)
+            if (HostShip.AssignedManeuver.ColorComplexity == MovementComplexity.Normal || HostShip.AssignedManeuver.ColorComplexity == MovementComplexity.Easy)
             {
                 RegisterAbilityTrigger(TriggerTypes.OnShipMovementFinish, (s, e) => AskToUseAbility(NeverUseByDefault, UseAbility));
             }

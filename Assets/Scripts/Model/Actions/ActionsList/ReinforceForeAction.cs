@@ -1,4 +1,5 @@
-﻿using Ship;
+﻿using BoardTools;
+using Ship;
 using System.Linq;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace ActionsList
             bool result = false;
             if (Combat.AttackStep == CombatStep.Defence)
             {
-                Board.ShipShotDistanceInformation reverseShotInfo = new Board.ShipShotDistanceInformation(Host, Combat.Attacker, Host.PrimaryWeapon);
+                ShotInfo reverseShotInfo = new ShotInfo(Host, Combat.Attacker, Host.PrimaryWeapon);
                 result = reverseShotInfo.InArc;
             }
             return result;
@@ -34,7 +35,7 @@ namespace ActionsList
         {
             int result = 0;
 
-            result = 10 + 30*Actions.CountEnemiesTargeting(Host, 1);
+            result = 25 + 30*Actions.CountEnemiesTargeting(Host, 1);
 
             return result;
         }

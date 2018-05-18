@@ -1,6 +1,4 @@
-﻿using ActionList;
-using Ship;
-using Upgrade;
+﻿using Upgrade;
 
 namespace Ship
 {
@@ -16,7 +14,7 @@ namespace Ship
 
                 IsUnique = true;
 
-                PrintedUpgradeIcons.Add(Upgrade.UpgradeType.Elite);
+                PrintedUpgradeIcons.Add(UpgradeType.Elite);
 
                 PilotAbilities.Add(new Abilities.TomaxBrenAbility());
             }
@@ -42,7 +40,7 @@ namespace Abilities
 
         private void CheckTomaxBrenAbility(GenericUpgrade upgrade)
         {            
-            if (!IsAbilityUsed && upgrade.hasType(UpgradeType.Elite))
+            if (!IsAbilityUsed && upgrade.HasType(UpgradeType.Elite))
             {
                 IsAbilityUsed = true;
                 Messages.ShowInfo(string.Format("{0} flips {1} face up.", HostShip.PilotName, upgrade.Name));

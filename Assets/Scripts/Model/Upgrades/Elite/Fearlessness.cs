@@ -2,6 +2,7 @@
 using Ship;
 using Abilities;
 using UnityEngine;
+using BoardTools;
 
 namespace UpgradesList
 {
@@ -12,6 +13,8 @@ namespace UpgradesList
             Types.Add(UpgradeType.Elite);
             Name = "Fearlessness";
             Cost = 1;
+
+            AvatarOffset = new Vector2(80, 0);
 
             UpgradeAbilities.Add(new FearlessnessAbility());
         }
@@ -70,7 +73,7 @@ namespace ActionsList
 
             if (!Combat.ShotInfo.InArc) return false;
 
-            Board.ShipShotDistanceInformation reverseShotInfo = new Board.ShipShotDistanceInformation(Combat.Defender, Combat.Attacker);
+            ShotInfo reverseShotInfo = new ShotInfo(Combat.Defender, Combat.Attacker, Combat.Defender.PrimaryWeapon);
             if (!reverseShotInfo.InArc || reverseShotInfo.Range != 1) return false;
 
             return result;

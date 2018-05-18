@@ -3,6 +3,7 @@ using Ship.XWing;
 using Upgrade;
 using System.Collections.Generic;
 using Mods.ModsList;
+using Abilities;
 
 namespace UpgradesList
 {
@@ -26,27 +27,38 @@ namespace UpgradesList
             {
                 UpgradeType.Astromech
             };
+
+            UpgradeAbilities.Add(new T65DA1Ability());
         }
 
         public override bool IsAllowedForShip(GenericShip ship)
         {
             return (ship is XWing);
         }
+    }
+}
 
-        public override void AttachToShip(Ship.GenericShip host)
+namespace Abilities
+{
+    public class T65DA1Ability : GenericAbility
+    {
+        public override void ActivateAbility()
         {
-            base.AttachToShip(host);
-
-            host.AfterGetManeuverColorDecreaseComplexity += T65DA1Ability;
+            HostShip.AfterGetManeuverColorDecreaseComplexity += CheckT65DA1Ability;
         }
 
-        private void T65DA1Ability(Ship.GenericShip ship, ref Movement.MovementStruct movement)
+        public override void DeactivateAbility()
         {
-            if (movement.ColorComplexity != Movement.ManeuverColor.None)
+            HostShip.AfterGetManeuverColorDecreaseComplexity -= CheckT65DA1Ability;
+        }
+
+        private void CheckT65DA1Ability(GenericShip ship, ref Movement.MovementStruct movement)
+        {
+            if (movement.ColorComplexity != Movement.MovementComplexity.None)
             {
                 if (movement.Speed == Movement.ManeuverSpeed.Speed2)
                 {
-                    movement.ColorComplexity = Movement.ManeuverColor.Green;
+                    movement.ColorComplexity = Movement.MovementComplexity.Easy;
                 }
             }
         }

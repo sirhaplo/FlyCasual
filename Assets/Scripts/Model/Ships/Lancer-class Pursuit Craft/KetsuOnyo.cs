@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using Ship;
 using UnityEngine;
 using SubPhases;
-using Board;
+using BoardTools;
 using Abilities;
 using System.Linq;
+using Arcs;
 
 namespace Ship
 {
@@ -37,12 +38,12 @@ namespace Abilities
 
         public override void ActivateAbility()
         {
-            Phases.OnCombatPhaseStart += TryRegisterKetsuOnyoPilotAbility;
+            Phases.OnCombatPhaseStart_Triggers += TryRegisterKetsuOnyoPilotAbility;
         }
 
         public override void DeactivateAbility()
         {
-            Phases.OnCombatPhaseStart -= TryRegisterKetsuOnyoPilotAbility;
+            Phases.OnCombatPhaseStart_Triggers -= TryRegisterKetsuOnyoPilotAbility;
         }
 
         private void TryRegisterKetsuOnyoPilotAbility()
@@ -60,17 +61,21 @@ namespace Abilities
                 FilterTargetsOfAbility,
                 GetAiPriorityOfTarget,
                 HostShip.Owner.PlayerNo,
-                true
+                true,
+                null,
+                HostShip.PilotName,
+                "Choose a ship inside your primary and mobile firing arcs to assign 1 Tractor Beam token to it.",
+                HostShip.ImageUrl
             );
         }
 
         private bool FilterTargetsOfAbility(GenericShip ship)
         {
-            ShipShotDistanceInformation shotInfo = new ShipShotDistanceInformation(HostShip, ship);
+            ShotInfo shotInfo = new ShotInfo(HostShip, ship, HostShip.PrimaryWeapon);
 
-            return FilterByTargetType (ship, new List<TargetTypes> () { TargetTypes.Enemy, TargetTypes.OtherFriendly })
-                && FilterTargetsByRange (ship, 1, 1)
-                && shotInfo.InMobileArc
+            return FilterByTargetType(ship, new List<TargetTypes>() { TargetTypes.Enemy, TargetTypes.OtherFriendly })
+                && FilterTargetsByRange(ship, 1, 1)
+                && shotInfo.InArcByType(ArcTypes.Mobile)
                 && shotInfo.InPrimaryArc;
         }
 
@@ -83,8 +88,8 @@ namespace Abilities
         {
             SelectShipSubPhase.FinishSelectionNoCallback();
 
-            ShipShotDistanceInformation shotInfo = new ShipShotDistanceInformation(HostShip, TargetShip);
-            if (shotInfo.InMobileArc && shotInfo.InMobileArc && shotInfo.Range == 1)
+            ShotInfo shotInfo = new ShotInfo(HostShip, TargetShip, HostShip.PrimaryWeapon);
+            if (shotInfo.InArcByType(ArcTypes.Mobile) && shotInfo.InPrimaryArc && shotInfo.Range == 1)
             {
                 Messages.ShowError(HostShip.PilotName + " assigns Tractor Beam Token\nto " + TargetShip.PilotName);
                 Tokens.TractorBeamToken token = new Tokens.TractorBeamToken(TargetShip, HostShip.Owner);
@@ -92,11 +97,11 @@ namespace Abilities
             }
             else
             {
-                if (!shotInfo.InMobileArc || !shotInfo.InMobileArc) 
+                if (!shotInfo.InArcByType(ArcTypes.Mobile) || !shotInfo.InPrimaryArc) 
                 {
                     Messages.ShowError ("Target is not inside Mobile Arc and Primary Arc");
                 } 
-                else if (shotInfo.Distance > 1) 
+                else if (shotInfo.Range > 1) 
                 {
                     Messages.ShowError ("Target is outside range 1");
                 }

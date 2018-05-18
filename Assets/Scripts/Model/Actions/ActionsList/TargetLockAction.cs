@@ -1,4 +1,5 @@
-﻿using RulesList;
+﻿using BoardTools;
+using RulesList;
 using Ship;
 using System.Collections;
 using System.Collections.Generic;
@@ -105,8 +106,7 @@ namespace SubPhases
         {
             Selection.ThisShip.RemoveAlreadyExecutedAction(typeof(ActionsList.TargetLockAction));
 
-            Phases.CurrentSubPhase = PreviousSubPhase;
-            Roster.AllShipsHighlightOff();
+            Phases.FinishSubPhase(this.GetType());
             Phases.CurrentSubPhase.Resume();
             UpdateHelpInfo();
         }
@@ -130,31 +130,33 @@ namespace SubPhases
         {
             CanMeasureRangeBeforeSelection = false;
 
-            var ship = Selection.ThisShip;
-            minRange = ship.TargetLockMinRange;
-            maxRange = ship.TargetLockMaxRange;
+            if (AbilityName == null) AbilityName = "Target Lock";
+            if (Description == null) Description = "Choose a ship to acquire a target lock on it";
 
-            targetsAllowed.Add(TargetTypes.Enemy);
-            finishAction = TrySelectTargetLock;
-
-            FilterTargets = FilterTargetLockTargets;
-            GetAiPriority = GetTargetLockAiPriority;
-
-            UI.ShowSkipButton();
+            PrepareByParameters(
+                TrySelectTargetLock,
+                FilterTargetLockTargets,
+                GetAiPriority,
+                Selection.ThisShip.Owner.PlayerNo,
+                true,
+                AbilityName,
+                Description,
+                ImageUrl
+            );
         }
 
         private bool FilterTargetLockTargets(GenericShip ship)
         {
-            Board.ShipDistanceInformation distanceInfo = new Board.ShipDistanceInformation(Selection.ThisShip, ship);
-            return ship.Owner.PlayerNo != Selection.ThisShip.Owner.PlayerNo && distanceInfo.Range >= minRange && distanceInfo.Range <= maxRange && Rules.TargetLocks.TargetLockIsAllowed(Selection.ThisShip, ship);
+            DistanceInfo distanceInfo = new DistanceInfo(Selection.ThisShip, ship);
+            return ship.Owner.PlayerNo != Selection.ThisShip.Owner.PlayerNo && distanceInfo.Range >= Selection.ThisShip.TargetLockMinRange && distanceInfo.Range <= Selection.ThisShip.TargetLockMaxRange && Rules.TargetLocks.TargetLockIsAllowed(Selection.ThisShip, ship);
         }
 
         private int GetTargetLockAiPriority(GenericShip ship)
         {
             int result = 0;
 
-            Board.ShipShotDistanceInformation shotInfo = new Board.ShipShotDistanceInformation(Selection.ThisShip, ship);
-            if (shotInfo.InShotAngle) result += 1000;
+            ShotInfo shotInfo = new ShotInfo(Selection.ThisShip, ship, Selection.ThisShip.PrimaryWeapon);
+            if (shotInfo.IsShotAvailable) result += 1000;
             if (!ship.ShipsBumped.Contains(Selection.ThisShip)) result += 500;
             if (shotInfo.Range <= 3) result += 250;
 
@@ -173,7 +175,7 @@ namespace SubPhases
         {
             if (Rules.TargetLocks.TargetLockIsAllowed(Selection.ThisShip, TargetShip))
             {
-                Actions.AssignTargetLockToPair(
+                Actions.AcquireTargetLock(
                     Selection.ThisShip,
                     TargetShip,
                     SuccessfulCallback,

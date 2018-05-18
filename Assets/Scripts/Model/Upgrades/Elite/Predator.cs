@@ -3,34 +3,55 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Upgrade;
+using Abilities;
+using ActionsList;
+using Ship;
+using RuleSets;
 
 namespace UpgradesList
 {
 
-    public class Predator : GenericUpgrade
+    public class Predator : GenericUpgrade, ISecondEditionUpgrade
     {
-
         public Predator() : base()
         {
             Types.Add(UpgradeType.Elite);
             Name = "Predator";
             Cost = 3;
+
+            UpgradeAbilities.Add(new PredatorAbility());
         }
 
-        public override void AttachToShip(Ship.GenericShip host)
+        public void AdaptUpgradeToSecondEdition()
         {
-            base.AttachToShip(host);
+            ImageUrl = "https://i.imgur.com/ahiBajk.png";
+        }
+    }
+}
 
-            host.AfterGenerateAvailableActionEffectsList += PredatorActionEffect;
+namespace Abilities
+{
+    public class PredatorAbility : GenericAbility
+    {
+        public override void ActivateAbility()
+        {
+            HostShip.AfterGenerateAvailableActionEffectsList += PredatorActionEffect;
         }
 
-        private void PredatorActionEffect(Ship.GenericShip host)
+        public override void DeactivateAbility()
         {
-            ActionsList.GenericAction newAction = new ActionsList.PredatorActionEffect();
-            newAction.ImageUrl = ImageUrl;
+            HostShip.AfterGenerateAvailableActionEffectsList -= PredatorActionEffect;
+        }
+
+        private void PredatorActionEffect(GenericShip host)
+        {
+            GenericAction newAction = new PredatorActionEffect
+            {
+                ImageUrl = HostUpgrade.ImageUrl,
+                Host = host
+            };
             host.AddAvailableActionEffect(newAction);
         }
-
     }
 }
 

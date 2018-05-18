@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using Ship;
 using System;
+using RuleSets;
 
 namespace Ship
 {
     namespace XWing
     {
-        public class WedgeAntilles : XWing
+        public class WedgeAntilles : XWing, ISecondEditionPilot
         {
             public WedgeAntilles() : base()
             {
@@ -21,6 +22,13 @@ namespace Ship
                 PrintedUpgradeIcons.Add(Upgrade.UpgradeType.Elite);
 
                 PilotAbilities.Add(new Abilities.WedgeAntillesAbility());
+            }
+
+            public void AdaptPilotToSecondEdition()
+            {
+                PilotSkill = 6;
+                ImageUrl = "https://i.imgur.com/FFsUoNp.png";
+                Cost = 70;
             }
         }
     }

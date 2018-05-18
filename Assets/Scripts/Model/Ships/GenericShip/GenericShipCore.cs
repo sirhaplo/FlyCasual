@@ -4,6 +4,7 @@ using UnityEngine;
 using Arcs;
 using Abilities;
 using System;
+using RuleSets;
 
 namespace Ship
 {
@@ -57,6 +58,7 @@ namespace Ship
         }
         
         public string PilotName { get; protected set; }
+        public string PilotNameShort { get; protected set; }
         public bool IsUnique { get; protected set; }
 
         public int Firepower { get; protected set; }
@@ -102,6 +104,31 @@ namespace Ship
             }
         }
 
+        private int maxEnergy;
+        public int MaxEnergy
+        {
+            get
+            {
+                int result = maxEnergy;
+                return Mathf.Max(result, 0);
+            }
+            set
+            {
+                maxEnergy = Mathf.Max(value, 0);
+            }
+        }
+
+        public int Energy
+        {
+            get
+            {
+                return Tokens.CountTokensByType(typeof(Tokens.EnergyToken));
+            }
+        }
+
+        public int Force { get; set; }
+        public int MaxForce { get; protected set; }
+
         protected List<IModifyPilotSkill> PilotSkillModifiers;
 
         private int pilotSkill;
@@ -110,7 +137,13 @@ namespace Ship
             get
             {
                 int result = pilotSkill;
-                if (PilotSkillModifiers.Count > 0) PilotSkillModifiers[0].ModifyPilotSkill(ref result);
+                if (PilotSkillModifiers.Count > 0)
+                {
+                    for (int i = PilotSkillModifiers.Count-1; i >= 0; i--)
+                    {
+                        PilotSkillModifiers[i].ModifyPilotSkill(ref result);
+                    }
+                }
                 
                 result = Mathf.Clamp(result, 0, 12);
                 return result;
@@ -155,8 +188,8 @@ namespace Ship
         public BaseSize ShipBaseSize { get; protected set; }
         public GenericShipBase ShipBase { get; protected set; }
 
-        public BaseArcsType ShipBaseArcsType { get; protected set; }
-        public GenericArc ArcInfo { get; protected set; }
+        public BaseArcsType ShipBaseArcsType { get; set; }
+        public ArcsHolder ArcInfo { get; protected set; }
 
         public Upgrade.ShipUpgradeBar UpgradeBar { get; protected set; }
         public List<Upgrade.UpgradeType> PrintedUpgradeIcons { get; protected set; }
@@ -192,9 +225,10 @@ namespace Ship
         public GenericShip()
         {
             IconicPilots = new Dictionary<Faction, Type>();
+            RequiredMods = new List<Type>();
             factions = new List<Faction>();
             SoundFlyPaths = new List<string> ();
-            Maneuvers = new Dictionary<string, Movement.ManeuverColor>();
+            Maneuvers = new Dictionary<string, Movement.MovementComplexity>();
             UpgradeBar = new Upgrade.ShipUpgradeBar(this);
             Tokens = new TokensManager(this);
             PrintedUpgradeIcons = new List<Upgrade.UpgradeType>();
@@ -245,30 +279,29 @@ namespace Ship
             SetTagOfChildrenRecursive(Model.transform, "ShipId:" + ShipId.ToString());
         }
 
-        private void InitializeShipBaseArc()
+        public void InitializeShipBaseArc()
         {
+            ArcInfo = new ArcsHolder(this);
+
             switch (ShipBaseArcsType)
             {
-                case BaseArcsType.ArcDefault:
-                    ArcInfo = new GenericArc(this);
-                    break;
                 case BaseArcsType.ArcRear:
-                    ArcInfo = new ArcRear(this);
+                    ArcInfo.Arcs.Add(new ArcRear(ShipBase));
                     break;
-                case BaseArcsType.ArcGhost:
-                    ArcInfo = new ArcGhost(this);
-                    break;
-                case BaseArcsType.Arc180:
-                    ArcInfo = new Arc180(this);
+                case BaseArcsType.ArcSpecial180:
+                    ArcInfo.Arcs.Add(new ArcSpecial180(ShipBase));
                     break;
                 case BaseArcsType.Arc360:
-                    ArcInfo = new Arc360(this);
+                    ArcInfo.GetArc<OutOfArc>().ShotPermissions.CanShootPrimaryWeapon = true;
                     break;
                 case BaseArcsType.ArcMobile:
-                    ArcInfo = new ArcMobile(this);
+                    ArcInfo.Arcs.Add(new ArcMobile(ShipBase));
                     break;
                 case BaseArcsType.ArcBullseye:
-                    ArcInfo = new ArcBullseye(this);
+                    ArcInfo.Arcs.Add(new ArcBullseye(ShipBase));
+                    break;
+                case BaseArcsType.ArcSpecialGhost:
+                    ArcInfo.Arcs.Add(new ArcSpecialGhost(ShipBase));
                     break;
                 default:
                     break;
@@ -282,6 +315,8 @@ namespace Ship
 
         public virtual void InitializePilot()
         {
+            Force = MaxForce;
+
             SetShipInsertImage();
             SetShipSkin();
             InitializePilotAbilities();

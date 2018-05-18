@@ -5,6 +5,7 @@ using System.Linq;
 using Ship;
 using System;
 using GameModes;
+using BoardTools;
 
 namespace SubPhases
 {
@@ -15,6 +16,8 @@ namespace SubPhases
 
         public override void Start()
         {
+            base.Start();
+
             Name = "Combat SubPhase";
 
             selectionMode = Team.Type.Friendly;
@@ -126,6 +129,20 @@ namespace SubPhases
 
         public override void FinishPhase()
         {
+            if (Phases.HasOnCombatPhaseEndEvents)
+            {
+                GenericSubPhase subphase = Phases.StartTemporarySubPhaseNew("Notification", typeof(NotificationSubPhase), StartCombatEndSubPhase);
+                (subphase as NotificationSubPhase).TextToShow = "End of combat";
+                subphase.Start();
+            }
+            else
+            {
+                StartCombatEndSubPhase();
+            }
+        }
+
+        private void StartCombatEndSubPhase()
+        {
             Phases.CurrentSubPhase = new CombatEndSubPhase();
             Phases.CurrentSubPhase.Start();
             Phases.CurrentSubPhase.Prepare();
@@ -199,7 +216,7 @@ namespace SubPhases
                 {
                     if (targetShip.Owner.PlayerNo != Phases.CurrentSubPhase.RequiredPlayer)
                     {
-                        Board.ShipShotDistanceInformation shotInfo = new Board.ShipShotDistanceInformation(Selection.ThisShip, targetShip);
+                        ShotInfo shotInfo = new ShotInfo(Selection.ThisShip, targetShip, Selection.ThisShip.PrimaryWeapon);
                         MovementTemplates.ShowFiringArcRange(shotInfo);
                         result = true;
                     }
@@ -343,6 +360,8 @@ namespace SubPhases
 
         public override void Resume()
         {
+            base.Resume();
+
             ChangeSelectionMode(Team.Type.Friendly);
         }
 

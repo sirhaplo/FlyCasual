@@ -4,12 +4,13 @@ using UnityEngine;
 using Ship;
 using SubPhases;
 using System;
+using RuleSets;
 
 namespace Ship
 {
     namespace YWing
     {
-        public class DutchVander : YWing
+        public class DutchVander : YWing, ISecondEditionPilot
         {
             public DutchVander() : base()
             {
@@ -24,6 +25,13 @@ namespace Ship
                 faction = Faction.Rebel;
 
                 PilotAbilities.Add(new Abilities.DutchVanderAbility());
+            }
+
+            public void AdaptPilotToSecondEdition()
+            {
+                PilotSkill = 4;
+
+                ImageUrl = "https://i.imgur.com/23Kxqgq.png";
             }
         }
     }
@@ -60,7 +68,12 @@ namespace Abilities
                     GrantFreeTargetLock,
                     FilterAbilityTargets,
                     GetAiAbilityPriority,
-                    HostShip.Owner.PlayerNo
+                    HostShip.Owner.PlayerNo,
+                    true,
+                    null,
+                    HostShip.PilotName,
+                    "Choose another ship.\nIt may acquire a Target Lock.",
+                    HostShip.ImageUrl
                 );
             }
             else
@@ -94,7 +107,11 @@ namespace Abilities
         private void StartSubphaseForTargetLock(object sender, System.EventArgs e)
         {
             Selection.ThisShip = TargetShip;
-            Selection.ThisShip.AcquireTargetLock(Triggers.FinishTrigger);
+            Selection.ThisShip.ChooseTargetToAcquireTargetLock(
+                Triggers.FinishTrigger,
+                HostShip.PilotName,
+                HostShip.ImageUrl
+            );
         }
     }
 }

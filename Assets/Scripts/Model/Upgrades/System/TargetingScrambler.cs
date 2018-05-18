@@ -42,7 +42,7 @@ namespace Abilities
 
         private void RegisterAbilityTrigger()
         {
-            int enemiesInRange = Board.BoardManager.GetShipsAtRange(HostShip, new Vector2(1, 3), Team.Type.Enemy).Count;
+            int enemiesInRange = BoardTools.Board.GetShipsAtRange(HostShip, new Vector2(1, 3), Team.Type.Enemy).Count;
             if (enemiesInRange > 0) RegisterAbilityTrigger(TriggerTypes.OnPlanningSubPhaseStart, AskToUseTargetingScrambler);
         }
 
@@ -59,7 +59,12 @@ namespace Abilities
                 AssignScrambledCondition,
                 FilterAbilityTargets,
                 GetAiAbilityPriority,
-                HostShip.Owner.PlayerNo
+                HostShip.Owner.PlayerNo,
+                true,
+                null,
+                HostUpgrade.Name,
+                "Choose another ship to assign \"Scrambled\" condition to it.\nYou will receive weapons disabled token.",
+                HostUpgrade.ImageUrl
             );
         }
 
@@ -69,7 +74,7 @@ namespace Abilities
 
             TargetShip.Tokens.AssignCondition(new ScrambledCondition(TargetShip));
             TargetShip.OnTryAddAvailableActionEffect += UseDiceModificationRestriction;
-            Phases.OnCombatPhaseEnd += RemoveScrambledCondition;
+            Phases.OnCombatPhaseEnd_NoTriggers += RemoveScrambledCondition;
 
             HostShip.Tokens.AssignToken(
                 new WeaponsDisabledToken(HostShip),
@@ -88,7 +93,7 @@ namespace Abilities
             return 50;
         }
 
-        private void UseDiceModificationRestriction(GenericAction action, ref bool canBeUsed)
+        private void UseDiceModificationRestriction(GenericShip ship, GenericAction action, ref bool canBeUsed)
         {
             if (Combat.Defender.ShipId == HostShip.ShipId && Combat.ShotInfo.Range == 1)
             {
@@ -99,7 +104,7 @@ namespace Abilities
 
         private void RemoveScrambledCondition()
         {
-            Phases.OnCombatPhaseEnd -= RemoveScrambledCondition;
+            Phases.OnCombatPhaseEnd_NoTriggers -= RemoveScrambledCondition;
 
             TargetShip.Tokens.RemoveCondition(typeof(ScrambledCondition));
             TargetShip.OnTryAddAvailableActionEffect -= UseDiceModificationRestriction;

@@ -35,12 +35,12 @@ namespace Abilities
 
         public override void ActivateAbility()
         {
-            Phases.OnCombatPhaseStart += RegisterGuriAbility;
+            Phases.OnCombatPhaseStart_Triggers += RegisterGuriAbility;
         }
 
         public override void DeactivateAbility()
         {
-            Phases.OnCombatPhaseStart -= RegisterGuriAbility;
+            Phases.OnCombatPhaseStart_Triggers -= RegisterGuriAbility;
         }
 
         private void RegisterGuriAbility()
@@ -50,7 +50,7 @@ namespace Abilities
 
         private void AskGuriAbility(object sender, EventArgs e)
         {
-            if (Board.BoardManager.GetShipsAtRange(HostShip, new Vector2(1, 1), Team.Type.Enemy).Count > 0)
+            if (BoardTools.Board.GetShipsAtRange(HostShip, new Vector2(1, 1), Team.Type.Enemy).Count > 0)
             {
                 if (!alwaysUseAbility)
                 {

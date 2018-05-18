@@ -4,6 +4,7 @@ using UnityEngine;
 using Ship;
 using SubPhases;
 using Tokens;
+using BoardTools;
 
 namespace Ship
 {
@@ -36,15 +37,15 @@ namespace Abilities
 	{
 		public override void ActivateAbility()
 		{
-			HostShip.OnCombatPhaseStart += CheckOldTerochAbility;
+            Phases.OnCombatPhaseStart_Triggers += CheckOldTerochAbility;
 		}
 
 		public override void DeactivateAbility()
 		{
-			HostShip.OnCombatPhaseStart -= CheckOldTerochAbility;
+            Phases.OnCombatPhaseStart_Triggers -= CheckOldTerochAbility;
 		}
 
-		private void CheckOldTerochAbility(GenericShip host)
+		private void CheckOldTerochAbility()
 		{
 			// give user the option to use ability
 			RegisterAbilityTrigger(TriggerTypes.OnCombatPhaseStart, AskSelectShip);
@@ -60,7 +61,12 @@ namespace Abilities
                     ActivateOldTerochAbility,
                     FilterTargetsOfAbility,
                     GetAiPriorityOfTarget,
-                    HostShip.Owner.PlayerNo
+                    HostShip.Owner.PlayerNo,
+                    true,
+                    null,
+                    HostShip.PilotName,
+                    "Choose a ship. If you are inside its firing arc, it discards all focus and evade tokens.",
+                    HostShip.ImageUrl
                 );
 			} else {
 				// no enemy in range
@@ -87,13 +93,13 @@ namespace Abilities
 
         private bool FilterTargetInEnemyArcWithTokens(GenericShip ship)
         {
-            Board.ShipShotDistanceInformation shotInfo = new Board.ShipShotDistanceInformation(ship, HostShip);
+            ShotInfo shotInfo = new ShotInfo(ship, HostShip, ship.PrimaryWeapon);
             return shotInfo.InArc && (ship.Tokens.HasToken(typeof(FocusToken)) || ship.Tokens.HasToken(typeof(EvadeToken)));
         }
 
         private void ActivateOldTerochAbility()
 		{
-			Board.ShipShotDistanceInformation shotInfo = new Board.ShipShotDistanceInformation(TargetShip, HostShip);
+			ShotInfo shotInfo = new ShotInfo(TargetShip, HostShip, HostShip.PrimaryWeapon);
 			// Range is already checked in "SelectTargetForAbility", only check if the Host is in the Target firing arc.
 			// Do not use InPrimaryWeaponFireZone, reason :
 			//		VCX-100 without docked Phantom cannot shoot using special rear arc,so InPrimaryWeaponFireZone

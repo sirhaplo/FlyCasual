@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GameModes;
+using BoardTools;
+using Bombs;
 
 public delegate void CallBackFunction();
 
@@ -11,7 +13,6 @@ public class GameManagerScript : MonoBehaviour {
 
     public UI UI;
     public ShipMovementScript Movement;
-    public ShipPositionManager Position;
 
     void Start()
     {
@@ -20,11 +21,11 @@ public class GameManagerScript : MonoBehaviour {
 
         //Global.Initialize();
 
-        Board.BoardManager.Initialize();
+        Board.Initialize();
         Roster.Initialize();
         Roster.Start();
         Selection.Initialize();
-        Bombs.BombsManager.Initialize();
+        BombsManager.Initialize();
         Actions.Initialize();
         Combat.Initialize();
         Triggers.Initialize();
@@ -46,6 +47,10 @@ public class GameManagerScript : MonoBehaviour {
         {
             if (!Console.IsActive) UI.GoNextShortcut();
         }
+
+        if (Phases.CurrentSubPhase != null) Phases.CurrentSubPhase.Update();
+
+        //TestShotDistance();
     }
 
     private void SetApplicationParameters()
@@ -59,9 +64,7 @@ public class GameManagerScript : MonoBehaviour {
     {
         PrefabsList = this.GetComponent<PrefabsList>();
         UI = this.GetComponent<UI>();
-        
         Movement = this.GetComponent<ShipMovementScript>();
-        Position = this.GetComponent<ShipPositionManager>();
     }
 
     public void Wait(float seconds, CallBackFunction callBack)
@@ -84,6 +87,14 @@ public class GameManagerScript : MonoBehaviour {
             GameObject.Find("SceneHolder/Board/CombatDiceHolder").transform.localPosition = new Vector3(73, 0, 0);
             GameObject.Find("SceneHolder/Board/CheckDiceHolder").transform.localPosition = new Vector3(85, 0, 0);
         }
+    }
+
+    private void TestShotDistance()
+    {
+        Ship.GenericShip ship1 = Roster.GetShipById("ShipId:1");
+        Ship.GenericShip ship2 = Roster.GetShipById("ShipId:2");
+        ShotInfo shotInfo = new ShotInfo(ship1, ship2, ship1.PrimaryWeapon);
+        if (shotInfo.IsShotAvailable) MovementTemplates.ShowRangeRuler(shotInfo.MinDistance); else MovementTemplates.ReturnRangeRuler();
     }
 
 }

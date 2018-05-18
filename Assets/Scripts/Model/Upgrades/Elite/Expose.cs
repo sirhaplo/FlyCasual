@@ -1,6 +1,8 @@
 ﻿using Upgrade;
 using UnityEngine;
 using Ship;
+using Abilities;
+using ActionsList;
 
 namespace UpgradesList
 {
@@ -11,19 +13,33 @@ namespace UpgradesList
             Types.Add(UpgradeType.Elite);
             Name = "Expose";
             Cost = 4;
+
+            UpgradeAbilities.Add(new ExposeAbility());
+        }
+    }
+}
+
+namespace Abilities
+{
+    public class ExposeAbility : GenericAbility
+    {
+        public override void ActivateAbility()
+        {
+            HostShip.AfterGenerateAvailableActionsList += ExposeAddAction;
         }
 
-        public override void AttachToShip(GenericShip host)
+        public override void DeactivateAbility()
         {
-            base.AttachToShip(host);
-
-            host.AfterGenerateAvailableActionsList += ExposeAddAction;
+            HostShip.AfterGenerateAvailableActionsList -= ExposeAddAction;
         }
 
         private void ExposeAddAction(GenericShip host)
         {
-            ActionsList.GenericAction newAction = new ActionsList.ExposeAction();
-            newAction.ImageUrl = ImageUrl;
+            GenericAction newAction = new ExposeAction
+            {
+                ImageUrl = HostUpgrade.ImageUrl,
+                Host = host
+            };
             host.AddAvailableAction(newAction);
         }
     }
@@ -51,7 +67,7 @@ namespace ActionsList
             Host.ChangeFirepowerBy(+1);
             Host.ChangeAgilityBy(-1);
 
-            Phases.OnEndPhaseStart += RemoveExposeEffect;
+            Phases.OnEndPhaseStart_NoTriggers += RemoveExposeEffect;
 
             Host.Tokens.AssignCondition(new Conditions.ExposeCondition(Host));
             Phases.CurrentSubPhase.CallBack();
@@ -62,7 +78,7 @@ namespace ActionsList
             Host.ChangeFirepowerBy(-1);
             Host.ChangeAgilityBy(+1);
 
-            Phases.OnEndPhaseStart -= RemoveExposeEffect;
+            Phases.OnEndPhaseStart_NoTriggers -= RemoveExposeEffect;
         }
 
         public override int GetActionPriority()

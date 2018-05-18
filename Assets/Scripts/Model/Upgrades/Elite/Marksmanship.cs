@@ -3,34 +3,54 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Upgrade;
+using Abilities;
+using ActionsList;
+using RuleSets;
 
 namespace UpgradesList
 {
 
-    public class Marksmanship : GenericUpgrade
+    public class Marksmanship : GenericUpgrade, ISecondEditionUpgrade
     {
-
         public Marksmanship() : base()
         {
             Types.Add(UpgradeType.Elite);
             Name = "Marksmanship";
             Cost = 3;
+
+            UpgradeAbilities.Add(new MarksmanshipAbility());
         }
 
-        public override void AttachToShip(Ship.GenericShip host)
+        public void AdaptUpgradeToSecondEdition()
         {
-            base.AttachToShip(host);
+            // Do nothing
+        }
+    }
+}
 
-            host.AfterGenerateAvailableActionsList += MarksmanshipAddAction;
+namespace Abilities
+{
+    public class MarksmanshipAbility : GenericAbility
+    {
+        public override void ActivateAbility()
+        {
+            HostShip.AfterGenerateAvailableActionsList += MarksmanshipAddAction;
         }
 
-        private void MarksmanshipAddAction(Ship.GenericShip host)
+        public override void DeactivateAbility()
         {
-            ActionsList.GenericAction newAction = new ActionsList.MarksmanshipAction();
-            newAction.ImageUrl = ImageUrl;
+            HostShip.AfterGenerateAvailableActionsList -= MarksmanshipAddAction;
+        }
+
+        private void MarksmanshipAddAction(GenericShip host)
+        {
+            GenericAction newAction = new MarksmanshipAction
+            {
+                ImageUrl = HostUpgrade.ImageUrl,
+                Host = host
+            };
             host.AddAvailableAction(newAction);
         }
-
     }
 }
 
@@ -51,7 +71,7 @@ namespace ActionsList
         {
             Host = Selection.ThisShip;
             Host.AfterGenerateAvailableActionEffectsList += MarksmanshipAddDiceModification;
-            Phases.OnEndPhaseStart += MarksmanshipUnSubscribeToFiceModification;
+            Phases.OnEndPhaseStart_NoTriggers += MarksmanshipUnSubscribeToFiceModification;
             Host.Tokens.AssignCondition(new Conditions.MarksmanshipCondition(Host));
             Phases.CurrentSubPhase.CallBack();
         }
@@ -63,7 +83,7 @@ namespace ActionsList
             return result;
         }
 
-        private void MarksmanshipAddDiceModification(Ship.GenericShip ship)
+        private void MarksmanshipAddDiceModification(GenericShip ship)
         {
             ship.AddAvailableActionEffect(this);
         }
@@ -72,7 +92,7 @@ namespace ActionsList
         {
             Host.Tokens.RemoveCondition(typeof(Conditions.MarksmanshipCondition));
             Host.AfterGenerateAvailableActionEffectsList -= MarksmanshipAddDiceModification;
-            Phases.OnEndPhaseStart -= MarksmanshipUnSubscribeToFiceModification;
+            Phases.OnEndPhaseStart_NoTriggers -= MarksmanshipUnSubscribeToFiceModification;
         }
 
         public override bool IsActionEffectAvailable()

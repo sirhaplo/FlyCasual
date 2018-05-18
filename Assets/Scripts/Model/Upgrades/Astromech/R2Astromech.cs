@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using Upgrade;
 using Abilities;
+using RuleSets;
 
 namespace UpgradesList
 {
 
-    public class R2Astromech : GenericUpgrade
+    public class R2Astromech : GenericUpgrade, ISecondEditionUpgrade
     {
 
         public R2Astromech() : base()
@@ -17,6 +18,11 @@ namespace UpgradesList
             Cost = 1;
 
             UpgradeAbilities.Add(new R2AstromechAbility());
+        }
+
+        public void AdaptUpgradeToSecondEdition()
+        {
+            MaxCharges = 2;
         }
 
     }
@@ -39,11 +45,11 @@ namespace Abilities
 
         private void CheckR2AstromechAbility(Ship.GenericShip ship, ref Movement.MovementStruct movement)
         {
-            if (movement.ColorComplexity != Movement.ManeuverColor.None)
+            if (movement.ColorComplexity != Movement.MovementComplexity.None)
             {
                 if ((movement.Speed == Movement.ManeuverSpeed.Speed1) || (movement.Speed == Movement.ManeuverSpeed.Speed2))
                 {
-                    movement.ColorComplexity = Movement.ManeuverColor.Green;
+                    movement.ColorComplexity = Movement.MovementComplexity.Easy;
                 }
             }
         }

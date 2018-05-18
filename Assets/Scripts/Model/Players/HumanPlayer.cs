@@ -28,22 +28,35 @@ namespace Players
 
         public override void PerformAttack()
         {
+            base.PerformAttack();
+
             UI.ShowSkipButton();
         }
 
         public override void UseOwnDiceModifications()
         {
+            base.UseOwnDiceModifications();
+
             Combat.ShowOwnDiceResultMenu();
         }
 
         public override void UseOppositeDiceModifications()
         {
+            base.UseOppositeDiceModifications();
+
             Combat.ShowOppositeDiceResultMenu();
+        }
+
+        public override void UseCompareResultsDiceModifications()
+        {
+            base.UseCompareResultsDiceModifications();
+
+            Combat.ShowCompareResultsMenu();
         }
 
         public override void TakeDecision()
         {
-            GameObject.Find("UI").transform.Find("DecisionsPanel").gameObject.SetActive(true);
+            (Phases.CurrentSubPhase as SubPhases.DecisionSubPhase).ShowDecisionWindowUI();
         }
 
         public override void AfterShipMovementPrediction()
@@ -73,11 +86,11 @@ namespace Players
             {
                 //automatic error messages
             }
-            else if (!Combat.ShotInfo.InShotAngle)
+            else if (!Combat.ShotInfo.IsShotAvailable)
             {
                 Messages.ShowErrorToHuman("Target is outside your firing arc");
             }
-            else if (Combat.ShotInfo.Range > Combat.ChosenWeapon.MaxRange || Combat.ShotInfo.Distance < Combat.ChosenWeapon.MinRange)
+            else if (Combat.ShotInfo.Range > Combat.ChosenWeapon.MaxRange || Combat.ShotInfo.Range < Combat.ChosenWeapon.MinRange)
             {
                 Messages.ShowErrorToHuman("Target is outside your firing range");
             }
@@ -111,9 +124,18 @@ namespace Players
 
         public override void SelectShipForAbility()
         {
-            (Phases.CurrentSubPhase as SubPhases.SelectShipSubPhase).HighlightShipsToSelect();
+            GameModes.GameMode.CurrentGameMode.StartSyncSelectShipPreparation();
         }
 
+        public override void RerollManagerIsPrepared()
+        {
+            DiceRerollManager.CurrentDiceRerollManager.ShowConfirmButton();
+        }
+
+        public override void PerformTractorBeamReposition(GenericShip ship)
+        {
+            RulesList.TractorBeamRule.PerfromManualTractorBeamReposition(ship, this);
+        }
     }
 
 }

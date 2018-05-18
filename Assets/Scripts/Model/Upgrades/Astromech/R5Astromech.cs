@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using Upgrade;
 using Abilities;
+using RuleSets;
 
 namespace UpgradesList
 {
 
-    public class R5Astromech : GenericUpgrade
+    public class R5Astromech : GenericUpgrade, ISecondEditionUpgrade
     {
         public R5Astromech() : base()
         {
@@ -17,6 +18,13 @@ namespace UpgradesList
             Cost = 1;
 
             UpgradeAbilities.Add(new R5AstromechAbility());
+        }
+
+        public void AdaptUpgradeToSecondEdition()
+        {
+            MaxCharges = 2;
+
+            ImageUrl = "https://i.imgur.com/B7zcHyk.png";
         }
     }
 
@@ -28,12 +36,12 @@ namespace Abilities
     {
         public override void ActivateAbility()
         {
-            Phases.OnEndPhaseStart += RegisterR5AstromechAbility;
+            Phases.OnEndPhaseStart_Triggers += RegisterR5AstromechAbility;
         }
 
         public override void DeactivateAbility()
         {
-            Phases.OnEndPhaseStart -= RegisterR5AstromechAbility;
+            Phases.OnEndPhaseStart_Triggers -= RegisterR5AstromechAbility;
         }
 
         private void RegisterR5AstromechAbility()

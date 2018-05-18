@@ -3,11 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Upgrade;
+using Abilities;
+using Ship;
+using ActionsList;
+using RuleSets;
 
 namespace UpgradesList
 {
-
-    public class ProtonTorpedoes : GenericSecondaryWeapon
+    public class ProtonTorpedoes : GenericSecondaryWeapon, ISecondEditionUpgrade
     {
         public ProtonTorpedoes() : base()
         {
@@ -24,30 +27,55 @@ namespace UpgradesList
             
             SpendsTargetLockOnTargetToShoot = true;
             IsDiscardedForShot = true;
+
+            UpgradeAbilities.Add(new ProtonTorpedoesAbility());
         }
 
-        public override void AttachToShip(Ship.GenericShip host)
+        public void AdaptUpgradeToSecondEdition()
         {
-            base.AttachToShip(host);
+            MaxCharges = 2;
 
-            AddDiceModification();
+            ImageUrl = "https://i.imgur.com/IU8bmXC.png";
+
+            IsDiscardedForShot = false;
+            UsesCharges = true;
         }
-
-        private void AddDiceModification()
-        {
-            ActionsList.ProtonTorpedoesAction action = new ActionsList.ProtonTorpedoesAction()
-            {
-                Host = Host,
-                ImageUrl = ImageUrl,
-                Source = this
-            };
-            action.AddDiceModification();
-
-            Host.AddAvailableAction(action);
-        }
-
     }
+}
 
+namespace Abilities
+{
+    public class ProtonTorpedoesAbility : GenericAbility
+    {
+        public override void ActivateAbility()
+        {
+            HostShip.AfterGenerateAvailableActionEffectsList += AddProtonTorpedoesDiceMofification;
+        }
+
+        public override void DeactivateAbility()
+        {
+            // Ability is turned off only after full attack is finished
+            HostShip.OnCombatDeactivation += DeactivateAbilityPlanned;
+        }
+
+        private void DeactivateAbilityPlanned(GenericShip ship)
+        {
+            HostShip.OnCombatDeactivation -= DeactivateAbilityPlanned;
+            HostShip.AfterGenerateAvailableActionEffectsList -= AddProtonTorpedoesDiceMofification;
+        }
+
+        private void AddProtonTorpedoesDiceMofification(GenericShip host)
+        {
+            ProtonTorpedoesAction action = new ProtonTorpedoesAction()
+            {
+                Host = host,
+                ImageUrl = HostUpgrade.ImageUrl,
+                Source = HostUpgrade
+            };
+
+            host.AddAvailableActionEffect(action);
+        }
+    }
 }
 
 namespace ActionsList
@@ -63,12 +91,7 @@ namespace ActionsList
             IsTurnsOneFocusIntoSuccess = true;
         }
 
-        public void AddDiceModification()
-        {
-            Host.AfterGenerateAvailableActionEffectsList += ProtonTorpedoesAddDiceModification;
-        }
-
-        private void ProtonTorpedoesAddDiceModification(Ship.GenericShip ship)
+        private void ProtonTorpedoesAddDiceModification(GenericShip ship)
         {
             ship.AddAvailableActionEffect(this);
         }

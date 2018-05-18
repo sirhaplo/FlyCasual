@@ -2,10 +2,7 @@
 using Ship;
 using Abilities;
 using Tokens;
-
-
-
-
+using UnityEngine;
 
 namespace UpgradesList
 {
@@ -20,7 +17,8 @@ namespace UpgradesList
 
 			UpgradeAbilities.Add (new RageAbility ());
 
-		}
+            AvatarOffset = new Vector2(53, 1);
+        }
 	}
 }
 
@@ -68,7 +66,7 @@ namespace ActionsList
 			Host = Selection.ThisShip;
 			//Adding Rage reroll effect
 			Host.AfterGenerateAvailableActionEffectsList += AddRageCondition; 
-			Phases.OnEndPhaseStart += RemoveRageCondition;
+			Phases.OnEndPhaseStart_NoTriggers += RemoveRageCondition;
 
 			//Rage Condition for reroll dices on each attach during this round
 			Messages.ShowInfo("Rage: Condition assigned");
@@ -105,10 +103,10 @@ namespace ActionsList
 
 		private void RemoveRageCondition()
 		{
-			Host.Tokens.RemoveCondition (typeof(Conditions.RageCondition));
+			Host.Tokens.RemoveCondition(typeof(Conditions.RageCondition));
 			Host.AfterGenerateAvailableActionEffectsList -= AddRageCondition;
 
-			Phases.OnEndPhaseStart -= RemoveRageCondition;
+			Phases.OnEndPhaseStart_NoTriggers -= RemoveRageCondition;
 		}
 			
 

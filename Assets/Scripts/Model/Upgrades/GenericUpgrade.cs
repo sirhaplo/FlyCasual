@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Ship;
+using RuleSets;
 
 namespace Upgrade
 {
@@ -74,9 +75,24 @@ namespace Upgrade
             }
         }
 
+        public Type UpgradeRuleType = typeof(FirstEdition);
+
+        public int MaxCharges { get; set; }
+        public int Charges { get; set; }
+        public bool UsesCharges;
+
         // SQUAD BUILDER ONLY
 
         public bool IsHidden;
+
+        internal void TryDiscard(object confirmDecision)
+        {
+            throw new NotImplementedException();
+        }
+
+        // Set to use as avatar
+
+        public Vector2 AvatarOffset;
 
         //public Type FromMod { get; set; }
         public Type FromMod { get; set; }
@@ -140,7 +156,7 @@ namespace Upgrade
          * @param type the type of upgrade to test.
          * @return true if this upgrade contains the specified type and false otherwise.
          */
-        public bool hasType(UpgradeType type){
+        public bool HasType(UpgradeType type){
             for (int i = 0; i < Types.Count; i++) {
                 if (Types [i] == type) {
                     return true;
@@ -186,12 +202,12 @@ namespace Upgrade
 
         // ATTACH TO SHIP
 
-        [Obsolete("This is in the process of being depricated, please use new template instead: UpgradeAbilities.Add();", false)]
         public virtual void AttachToShip(GenericShip host)
         {
             Host = host;
             InitializeAbility();
             ActivateAbility();
+            ShowCharges();
         }
 
         private void InitializeAbility()
@@ -204,10 +220,16 @@ namespace Upgrade
 
         private void ActivateAbility()
         {
+            RuleSet.Instance.ActivateGenericUpgradeAbility(Host, Types);
             foreach (var ability in UpgradeAbilities)
             {
                 ability.ActivateAbility();
             }
+        }
+
+        private void ShowCharges()
+        {
+            if (MaxCharges > 0) Name = Name + " (" + Charges + ")";
         }
 
         private void DeactivateAbility()
@@ -241,7 +263,8 @@ namespace Upgrade
         public virtual void Discard(Action callBack)
         {
             isDiscarded = true;
-            Roster.DiscardUpgrade(Host, Name);
+            PreDettachFromShip();
+            Roster.ShowUpgradeAsInactive(Host, Name);
             DeactivateAbility();
 
             Host.CallAfterDiscardUpgrade(this, callBack);
@@ -267,7 +290,7 @@ namespace Upgrade
             }
         }
 
-        public virtual void FlipFaceup(Action callback = null)
+        public virtual void FlipFaceup(Action callback)
         {
             isDiscarded = false;
             Roster.FlipFaceupUpgrade(Host, Name);
@@ -283,6 +306,19 @@ namespace Upgrade
 
             Slot.PreInstallUpgrade(newUpgrade, Host);
             Slot.TryInstallUpgrade(newUpgrade, Host);
+        }
+
+        protected void SpendCharge(Action callBack)
+        {
+            string oldChargesString = " (" + Charges + ")";
+            string newChargesString = " (" + (Charges - 1) + ")";
+            Name = Name.Replace(oldChargesString, newChargesString);
+            Roster.UpdateUpgradesPanel(Host, Host.InfoPanel);
+
+            Charges--;
+            if (Charges == 0) Roster.ShowUpgradeAsInactive(Host, Name);
+
+            callBack();
         }
     }
 

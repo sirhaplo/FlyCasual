@@ -2,9 +2,10 @@
 using Ship.YT1300;
 using Upgrade;
 using System;
+using Abilities;
 
 namespace UpgradesList
-{ 
+{
     public class MillenniumFalconHotR : GenericUpgrade
     {
         public MillenniumFalconHotR() : base()
@@ -15,18 +16,29 @@ namespace UpgradesList
             isUnique = true;
 
             NameCanonical = "millenniumfalcon-swx57";
+
+            UpgradeAbilities.Add(new MillenniumFalconHotRAbility());
         }
 
         public override bool IsAllowedForShip(GenericShip ship)
         {
             return ship is YT1300;
         }
+    }
+}
 
-        public override void AttachToShip(GenericShip host)
+namespace Abilities
+{
+    public class MillenniumFalconHotRAbility : GenericAbility
+    {
+        public override void ActivateAbility()
         {
-            base.AttachToShip(host);
+            HostShip.OnMovementFinish += CheckAbility;
+        }
 
-            host.OnMovementFinish += CheckAbility;
+        public override void DeactivateAbility()
+        {
+            HostShip.OnMovementFinish -= CheckAbility;
         }
 
         private void CheckAbility(GenericShip ship)
@@ -34,15 +46,18 @@ namespace UpgradesList
             if (ship.AssignedManeuver.Speed != 3) return;
             if (ship.AssignedManeuver.Bearing != Movement.ManeuverBearing.Bank) return;
             if (ship.IsBumped) return;
-            if (Board.BoardManager.IsOffTheBoard(ship)) return;
+            if (BoardTools.Board.IsOffTheBoard(ship)) return;
 
-            Triggers.RegisterTrigger(new Trigger() {
-                Name = "Millenium Falcon's ability",
-                TriggerType = TriggerTypes.OnShipMovementFinish,
-                TriggerOwner = Host.Owner.PlayerNo,
-                Sender = ship,
-                EventHandler = RotateShip180
-            });
+            Triggers.RegisterTrigger(
+                new Trigger()
+                {
+                    Name = "Millenium Falcon's ability",
+                    TriggerType = TriggerTypes.OnShipMovementFinish,
+                    TriggerOwner = HostShip.Owner.PlayerNo,
+                    Sender = ship,
+                    EventHandler = RotateShip180
+                }
+            );
         }
 
         private void RotateShip180(object sender, EventArgs e)

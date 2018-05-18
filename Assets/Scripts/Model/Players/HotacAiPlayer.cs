@@ -32,7 +32,7 @@ namespace Players
             }
             else
             {
-                ship.SetAssignedManeuver(new Movement.StraightMovement(2, Movement.ManeuverDirection.Forward, Movement.ManeuverBearing.Straight, Movement.ManeuverColor.White));
+                ship.SetAssignedManeuver(new Movement.StraightMovement(2, Movement.ManeuverDirection.Forward, Movement.ManeuverBearing.Straight, Movement.MovementComplexity.Normal));
             }
 
             ship.GenerateAvailableActionsList();
@@ -41,7 +41,7 @@ namespace Players
                 if (action.GetType() == typeof(ActionsList.TargetLockAction))
                 {
                     isTargetLockPerformed = true;
-                    Actions.AssignTargetLockToPair(
+                    Actions.AcquireTargetLock(
                         ship,
                         anotherShip,
                         delegate { PerformManeuverOfShip(ship); },

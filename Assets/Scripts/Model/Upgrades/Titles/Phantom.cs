@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 using UnityEngine;
 using Abilities;
+using Arcs;
 
 namespace UpgradesList
 {
@@ -47,7 +48,7 @@ namespace Abilities
         private void OnDocked(GenericShip dockingHost)
         {
             ToggleRearArc(true);
-            Phases.OnCombatPhaseEnd += RegisterExtraShotAbility;
+            Phases.OnCombatPhaseEnd_Triggers += RegisterExtraShotAbility;
             dockingHost.OnShipIsDestroyed += DeactivateSecondAttack;
         }
 
@@ -60,12 +61,12 @@ namespace Abilities
 
         private void DeactivateSecondAttack(GenericShip host, bool isFled)
         {
-            Phases.OnCombatPhaseEnd -= RegisterExtraShotAbility;
+            Phases.OnCombatPhaseEnd_Triggers -= RegisterExtraShotAbility;
         }
 
         private void ToggleRearArc(bool isActive)
         {
-            HostShip.Host.ArcInfo.GetRearArc().ShotPermissions.CanShootPrimaryWeapon = isActive;
+            HostShip.Host.ArcInfo.GetArc<ArcSpecialGhost>().ShotPermissions.CanShootPrimaryWeapon = isActive;
         }
 
         private void RegisterExtraShotAbility()
@@ -82,8 +83,14 @@ namespace Abilities
             {
                 HostShip.Host.IsCannotAttackSecondTime = true;
 
-                Messages.ShowInfo(HostShip.Host.PilotName + " can perform second attack\nfrom Turret");
-                Combat.StartAdditionalAttack(HostShip.Host, Triggers.FinishTrigger, IsTurretAttack);
+                Combat.StartAdditionalAttack(
+                    HostShip.Host,
+                    Triggers.FinishTrigger,
+                    IsTurretAttack,
+                    HostUpgrade.Name,
+                    "You may perfrom additional turret attack.",
+                    HostUpgrade.ImageUrl
+                );
             }
             else
             {
@@ -97,7 +104,7 @@ namespace Abilities
             bool result = false;
 
             GenericUpgrade upgradeWeapon = weapon as GenericUpgrade;
-            if (upgradeWeapon != null && upgradeWeapon.hasType(UpgradeType.Turret))
+            if (upgradeWeapon != null && upgradeWeapon.HasType(UpgradeType.Turret))
             {
                 result = true;
             }

@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Upgrade;
+using Abilities;
+using RuleSets;
+using ActionsList;
 
 namespace UpgradesList
 {
 
-    public class IonCannonTurret : GenericSecondaryWeapon
+    public class IonCannonTurret : GenericSecondaryWeapon, ISecondEditionUpgrade
     {
         public IonCannonTurret() : base()
         {
@@ -20,23 +23,34 @@ namespace UpgradesList
             AttackValue = 3;
 
             CanShootOutsideArc = true;
+
+            UpgradeAbilities.Add(new IonCannonTurretAbility());
         }
 
-        public override void AttachToShip(Ship.GenericShip host)
+        public void AdaptUpgradeToSecondEdition()
         {
-            base.AttachToShip(host);
+            ImageUrl = "https://i.imgur.com/qepSXTj.png";
+        }
+    }
+}
 
-            SubscribeOnHit();
+namespace Abilities
+{
+    public class IonCannonTurretAbility : GenericAbility
+    {
+        public override void ActivateAbility()
+        {
+            HostShip.OnShotHitAsAttacker += RegisterIonTurretEffect;
         }
 
-        private void SubscribeOnHit()
+        public override void DeactivateAbility()
         {
-            Host.OnShotHitAsAttacker += RegisterIonTurretEffect;
+            HostShip.OnShotHitAsAttacker -= RegisterIonTurretEffect;
         }
 
         private void RegisterIonTurretEffect()
         {
-            if (Combat.ChosenWeapon == this)
+            if (Combat.ChosenWeapon == HostUpgrade)
             {
                 Triggers.RegisterTrigger(new Trigger()
                 {
